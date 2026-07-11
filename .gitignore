@@ -1,0 +1,26 @@
+# Node modules
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Local databases
+backend/database.sqlite
+
+# Media uploads (evidence)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Environment variables
+.env
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# Production builds
+frontend/dist/
+
+# OS/IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
