@@ -128,14 +128,36 @@ const seedDatabase = async () => {
   }
 };
 
-// Sync database and start server
-sequelize.sync({ force: false }).then(async () => {
-  console.log('SQLite Database synchronized.');
-  await seedDatabase();
-  
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}).catch(err => {
-  console.error('Failed to sync database:', err);
+// Sync database lazily or on startup
+let isSynced = false;
+const syncDb = async () => {
+  if (!isSynced) {
+    await sequelize.sync({ force: false });
+    await seedDatabase();
+    isSynced = true;
+  }
+};
+
+// Middleware to ensure DB sync before any request
+app.use(async (req, res, next) => {
+  try {
+    await syncDb();
+    next();
+  } catch (err) {
+    console.error('Failed to sync database:', err);
+    next(err);
+  }
 });
+
+// Only call app.listen if we are running locally (not in serverless environment)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  syncDb().then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  }).catch(err => {
+    console.error('Database sync failed at startup:', err);
+  });
+}
+
+module.exports = app;
