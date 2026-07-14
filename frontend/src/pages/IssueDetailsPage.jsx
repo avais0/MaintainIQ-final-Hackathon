@@ -323,7 +323,7 @@ export default function IssueDetailsPage() {
                       <div className="mt-3">
                         <span className="text-slate-500 text-xs block font-semibold mb-1">Evidence Media</span>
                         <a 
-                          href={`http://localhost:5000${rec.evidenceUrl}`} 
+                          href={`${API_URL.replace('/api', '')}${rec.evidenceUrl}`} 
                           target="_blank" 
                           rel="noreferrer"
                           className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-350"
