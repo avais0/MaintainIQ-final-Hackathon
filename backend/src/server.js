@@ -14,7 +14,10 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static upload folders (for maintenance evidence uploads)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+const uploadDir = process.env.VERCEL
+  ? '/tmp/uploads'
+  : path.join(__dirname, '../uploads');
+app.use('/uploads', express.static(uploadDir));
 
 // Connect all api endpoints
 app.use('/api', routes);
