@@ -37,11 +37,35 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/public/asset/:code" element={<PublicAssetPage />} />
-      <Route path="/public/asset/:code/report" element={<ReportIssuePage />} />
+      {/* Root Route is the Login Page */}
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<Navigate to="/" replace />} />
+
+      {/* Protected Client/User Routes */}
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'technician']}>
+            <LandingPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/public/asset/:code" 
+        element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'technician']}>
+            <PublicAssetPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/public/asset/:code/report" 
+        element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'technician']}>
+            <ReportIssuePage />
+          </ProtectedRoute>
+        } 
+      />
 
       {/* Admin Protected Routes */}
       <Route 
