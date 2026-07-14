@@ -2,7 +2,7 @@ const { Sequelize } = require('sequelize');
 const path = require('path');
 
 const storagePath = process.env.VERCEL 
-  ? '/tmp/database.sqlite' 
+  ? ':memory:' 
   : path.join(__dirname, '../../database.sqlite');
 
 const sequelize = new Sequelize({
