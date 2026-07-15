@@ -1,3 +1,9 @@
+// Force Vercel to bundle Postgres dependencies
+if (process.env.VERCEL) {
+  require('pg');
+  require('pg-hstore');
+}
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
