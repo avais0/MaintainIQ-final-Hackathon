@@ -132,6 +132,26 @@ const seedDatabase = async () => {
       }
       console.log('Seeded 5 default assets successfully.');
     }
+
+    // 3. Self-healing check: Update older localhost QR codes to the production FRONTEND_URL if configured
+    const assets = await Asset.findAll();
+    for (const asset of assets) {
+      if (asset.qrCodeUrl && FRONTEND_URL !== 'http://localhost:5173') {
+        // If the QR code was generated with localhost, re-generate it using the live domain
+        const hasLocalhost = asset.qrCodeUrl.includes('localhost') || asset.qrCodeUrl.includes('127.0.0.1');
+        if (hasLocalhost) {
+          console.log(`Self-healing: Re-generating QR code for ${asset.code} using live URL: ${FRONTEND_URL}`);
+          const publicUrl = `${FRONTEND_URL}/public/asset/${asset.code}`;
+          const qrCodeUrl = await QRCode.toDataURL(publicUrl, {
+            errorCorrectionLevel: 'H',
+            margin: 2,
+            width: 300
+          });
+          asset.qrCodeUrl = qrCodeUrl;
+          await asset.save();
+        }
+      }
+    }
   } catch (error) {
     console.error('Failed to seed database:', error);
   }
