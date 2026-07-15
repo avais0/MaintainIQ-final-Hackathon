@@ -47,7 +47,8 @@ router.get('/', authenticate, async (req, res) => {
       where,
       include: [
         { model: Asset, as: 'asset', attributes: ['id', 'code', 'name', 'location'] },
-        { model: User, as: 'technician', attributes: ['id', 'username', 'email'] }
+        { model: User, as: 'technician', attributes: ['id', 'username', 'email'] },
+        { model: MaintenanceRecord, as: 'maintenanceRecords', attributes: ['id', 'cost'] }
       ],
       order: [['createdAt', 'DESC']]
     });
