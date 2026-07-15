@@ -21,6 +21,17 @@ export default function LandingPage() {
     { code: 'ASSET-003', name: 'Breakroom Refrigerator', type: 'Appliance' }
   ];
 
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('username');
+    navigate('/');
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-between relative overflow-hidden text-slate-100">
       {/* Background glow animations */}
@@ -33,13 +44,42 @@ export default function LandingPage() {
           <Wrench className="w-6 h-6 text-indigo-400" />
           <span className="text-xl font-bold tracking-tight">Maintain<span className="text-indigo-400">IQ</span></span>
         </div>
-        <Link 
-          to="/login"
-          className="flex items-center gap-1.5 border border-slate-800 hover:border-indigo-500/40 bg-slate-900/40 hover:bg-indigo-500/10 text-slate-300 hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
-        >
-          <Shield className="w-4 h-4 text-indigo-400" />
-          <span>Portal Login</span>
-        </Link>
+        
+        {token ? (
+          <div className="flex items-center gap-4">
+            {role === 'admin' && (
+              <Link 
+                to="/dashboard" 
+                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors mr-2"
+              >
+                Go to Admin Panel
+              </Link>
+            )}
+            {role === 'technician' && (
+              <Link 
+                to="/dashboard" 
+                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors mr-2"
+              >
+                Go to Tech Panel
+              </Link>
+            )}
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 border border-red-950/40 hover:border-red-500/40 bg-red-950/20 hover:bg-red-500/10 text-red-300 hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer"
+            >
+              <Shield className="w-4 h-4 text-red-400" />
+              <span>Logout</span>
+            </button>
+          </div>
+        ) : (
+          <Link 
+            to="/login"
+            className="flex items-center gap-1.5 border border-slate-800 hover:border-indigo-500/40 bg-slate-900/40 hover:bg-indigo-500/10 text-slate-300 hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
+          >
+            <Shield className="w-4 h-4 text-indigo-400" />
+            <span>Portal Login</span>
+          </Link>
+        )}
       </header>
 
       {/* Hero Section */}
