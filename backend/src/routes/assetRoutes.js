@@ -48,7 +48,40 @@ router.get('/', authenticate, requireRole(['admin', 'technician']), async (req, 
       where,
       order: [['createdAt', 'DESC']]
     });
-    res.json(assets);
+
+    // Determine dynamic FRONTEND_URL from request origin/referer
+    let dynamicFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const origin = req.headers.origin;
+    const referer = req.headers.referer;
+    
+    if (origin) {
+      dynamicFrontendUrl = origin;
+    } else if (referer) {
+      try {
+        const parsedReferer = new URL(referer);
+        dynamicFrontendUrl = parsedReferer.origin;
+      } catch (e) {}
+    }
+
+    // Generate dynamic QR Codes on-the-fly for list view
+    const mappedAssets = await Promise.all(assets.map(async (asset) => {
+      let dynamicQrCode = asset.qrCodeUrl;
+      try {
+        const publicUrl = `${dynamicFrontendUrl}/public/asset/${asset.code}`;
+        dynamicQrCode = await QRCode.toDataURL(publicUrl, {
+          errorCorrectionLevel: 'H',
+          margin: 2,
+          width: 300
+        });
+      } catch (e) {}
+      
+      return {
+        ...asset.toJSON(),
+        qrCodeUrl: dynamicQrCode
+      };
+    }));
+
+    res.json(mappedAssets);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -75,6 +108,33 @@ router.get('/public/:code', async (req, res) => {
       return res.status(404).json({ error: 'Asset not found.' });
     }
 
+    // Determine dynamic FRONTEND_URL from request origin/referer
+    let dynamicFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const origin = req.headers.origin;
+    const referer = req.headers.referer;
+    
+    if (origin) {
+      dynamicFrontendUrl = origin;
+    } else if (referer) {
+      try {
+        const parsedReferer = new URL(referer);
+        dynamicFrontendUrl = parsedReferer.origin;
+      } catch (e) {}
+    }
+
+    // Generate dynamic QR Code on-the-fly to guarantee correctness
+    let dynamicQrCode = asset.qrCodeUrl;
+    try {
+      const publicUrl = `${dynamicFrontendUrl}/public/asset/${asset.code}`;
+      dynamicQrCode = await QRCode.toDataURL(publicUrl, {
+        errorCorrectionLevel: 'H',
+        margin: 2,
+        width: 300
+      });
+    } catch (qrErr) {
+      console.error('Error generating dynamic QR code on the fly:', qrErr);
+    }
+
     // Expose only safe information
     const safeAsset = {
       id: asset.id,
@@ -86,7 +146,7 @@ router.get('/public/:code', async (req, res) => {
       status: asset.status,
       lastServiceDate: asset.lastServiceDate,
       nextServiceDate: asset.nextServiceDate,
-      qrCodeUrl: asset.qrCodeUrl,
+      qrCodeUrl: dynamicQrCode,
       retiredAt: asset.retiredAt,
       // Provide clean activity timeline without technician or cost details
       history: asset.history.map(h => ({
